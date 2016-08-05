@@ -14,7 +14,7 @@
 # limitations under the License.
 
 - name: Setup Filebeat log shiping
-  hosts: all
+  hosts: rsyslog_all[0]
   max_fail_percentage: 20
   user: root
   roles:

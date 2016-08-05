@@ -2,7 +2,8 @@
 filebeat:
   prospectors:
 {% for service in filebeat_logging_paths %}
-    - paths: {{ service.paths }}
+{% for host in groups[service.host_group] %}
+    - paths: /var/log/log-storage/{{ host }}/{{ service.filename_patterns }}
 {% if service.document_type is defined %}
       document_type: {{ service.document_type }}
 {% endif %}
@@ -26,6 +27,7 @@ filebeat:
         match: {{ service.multiline.match }}
         negate: {{ service.multiline.negate }}
 {% endif %}
+{% endfor %}
 {% endfor %}
   registry_file: {{ filebeat_registry_file |default('/var/lib/filebeat/registry') }}
 output:

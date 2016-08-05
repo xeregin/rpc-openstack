@@ -52,8 +52,9 @@ filebeat_logstash_hosts: "{% for host in groups['logstash_all'] %}{{ hostvars[ho
 multiline_openstack_pattern: '^[0-9-]{10} +[0-9:\.]+ +[0-9]+ +[A-Z]+ +[A-Za-z0-9\._]+ \[|Traceback'
 
 filebeat_logging_paths:
-  - paths:
-    - '/var/log/cinder/*.log'
+  - host_group: 'cinder_all'
+    file_patterns:
+    - 'cinder*.log'
     document_type: openstack
     tags:
     - openstack
@@ -63,8 +64,9 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
-    - '/var/log/glance/*.log'
+  - host_group: 'glance_all'
+    file_patterns:
+    - 'glance*.log'
     document_type: openstack
     tags:
     - openstack
@@ -74,8 +76,9 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
-    - '/var/log/heat/*.log'
+  - host_group: 'heat_all'
+    file_patterns:
+    - 'heat*.log'
     document_type: openstack
     tags:
     - openstack
@@ -85,8 +88,9 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
-    - '/var/log/horizon/*.log'
+  - host_group: 'horizon_all'
+    file_patterns:
+    - 'horizon*.log'
     document_type: openstack
     tags:
     - openstack
@@ -96,7 +100,8 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
+  - host_group: 'keystone_all'
+    file_patterns:
     - '/var/log/keystone/keystone.log'
     document_type: openstack
     tags:
@@ -107,16 +112,18 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
-    - '/var/log/keystone/ssl_access.log'
-    - '/var/log/keystone/keystone-apache-error.log'
+  - host_group: 'keystone_all'
+    file_patterns:
+    - 'ssl_access.log'
+    - 'keystone-apache-error.log'
     tags:
     - openstack
     - apache
     - apache-access
     - keystone
-  - paths:
-    - '/var/log/neutron/*.log'
+  - host_group: 'neutron_all'
+    file_patterns:
+    - 'neutron*.log'
     document_type: openstack
     tags:
     - openstack
@@ -126,8 +133,9 @@ filebeat_logging_paths:
       pattern: "{{ multiline_openstack_pattern }}"
       negate: 'true'
       match: after
-  - paths:
-    - '/var/log/nova/*.log'
+  - host_group: 'nova_all'
+    file_patterns:
+    - 'nova*.log'
     document_type: openstack
     tags:
     - openstack
@@ -139,71 +147,95 @@ filebeat_logging_paths:
       match: after
   # NOTE(sigmavirus24): Swift does not use oslo.log, so we cannot rely on our
   # oslo-based pattern
-  - paths:
-    - '/var/log/swift/account*.log'
+  - host_group: 'swift_all'
+    file_patterns:
+    - 'account*.log'
     document_type: openstack
     tags:
     - openstack
     - swift
     - swift-account
-  - paths:
-    - '/var/log/swift/container*.log'
+  - host_group: 'swift_all'
+    file_patterns:
+    - 'container*.log'
     document_type: openstack
     tags:
     - openstack
     - swift
     - swift-container
-  - paths:
-    - '/var/log/swift/object*.log'
+  - host_group: 'swift_all'
+    file_patterns:
+    - 'object*.log'
     document_type: openstack
     tags:
     - openstack
     - swift
     - swift-object
-  - paths:
-    - '/var/log/swift/proxy*.log'
+  - host_group: 'swift_all'
+    file_patterns:
+    - 'proxy*.log'
     document_type: openstack
     tags:
     - openstack
     - swift
     - swift-proxy
   # Start of non-OpenStack services whose logs we'd like to ship
-  - paths:
-    - '/var/log/apparmor/*.log'
-    tags:
-    - apparmor
-    - infrastructure
-  - paths:
-    - '/var/log/audit/*.log'
+  # NOTE(sigmavirus24): I couldn't find specific log names in the apparmor
+  # directory.
+  # - paths:
+  #   - '/var/log/apparmor/*.log'
+  #   tags:
+  #   - apparmor
+  #   - infrastructure
+  - host_group: 'all'
+    file_patterns:
+    - 'auditd.log'
+    - 'audispd.log'
     tags:
     - audit
-  - paths:
-    - '/var/log/fsck/*'
-    tags:
-    - fsck
-  - paths:
-    - '/var/log/haproxy/*.log'
+  # NOTE(sigmavirus24): We don't seem to ship fsck logs with rsyslog
+  # - paths:
+  # - - '/var/log/fsck/*'
+  # - tags:
+  # - - fsck
+  - host_group: 'haproxy_all'
+    file_patterns:
+    - 'haproxy*.log'
     tags:
     - haproxy
     - infrastructure
-  - paths:
-    - '/var/log/libvirt/*.log'
-    - '/var/log/libvirt/*/*.log'
-    tags:
-    - libvirt
-    - nova
-  - paths:
-    - '/var/log/lxc/*.log'
+  # NOTE(sigmavirus24): rsyslog doesn't ship the libvirt logs
+  # - paths:
+  # - - '/var/log/libvirt/*.log'
+  # - - '/var/log/libvirt/*/*.log'
+  # - tags:
+  # - - libvirt
+  # - - nova
+  - host_group: 'hosts'
+    file_patterns:
+    - 'lxc*.log'
     tags:
     - lxc
     - infrastructure
-  - paths:
-    - '/var/log/upstart/*.log'
+  - host_group: 'all'
+    file_patterns:
+    - 'cgmanager.log'
+    - 'cinder-volume.log'
+    - 'heat-engine.log'
+    - 'neutron-l3-agent.log'
+    - 'neutron-linuxbridge-agent.log'
+    - 'neutron-server.log'
+    - 'nova-api-metadata.log'
+    - 'nova-compute.log'
+    - 'nova-scheduler.log'
+    - 'nova-spicehtml5proxy.log'
+    - 'systemd-logind.log'
     tags:
     - upstart
     - infrastructure
-  - paths:
-    - '/var/log/mysql_logs/*.log'
+  - host_group: 'galera_all'
+    file_patterns:
+    - 'galera_server_error.log'
     tags:
     - galera
     - mysql
@@ -213,8 +245,9 @@ filebeat_logging_paths:
       pattern: '^([^0-9W]|$)'
       negate: 'false'
       match: after
-  - paths:
-    - '/var/log/rabbitmq/*'
+  - host_group: 'rabbitmq_all'
+    file_patterns:
+    - 'rabbitmq*.log'
     multiline:
       # See https://play.golang.org/p/2SwhbSZxue
       pattern: '^='
@@ -223,8 +256,9 @@ filebeat_logging_paths:
     tags:
     - rabbitmq
     - infrastructure
-  - paths:
-    - '/var/log/elasticsearch/*.log'
+  - host_group: 'elasticsearch_all'
+    file_patterns:
+    - 'openstack*.log'
     multiline:
       # See https://play.golang.org/p/Fo3bb7Mcgr
       pattern: '^[^\[]'
@@ -234,14 +268,16 @@ filebeat_logging_paths:
     - elasticsearch
     - infrastructure
     - logging
-  - paths:
-    - '/var/log/logstash/*.log'
+  - host_group: 'logstash_all'
+    file_patterns:
+    - 'logstash.log'
     tags:
     - logstash
     - infrastructure
     - logging
-  - paths:
-    - '/var/log/ceph/ceph-mon.*.log'
+  - host_group: 'ceph_all'
+    file_patterns:
+    - 'ceph-mon.*.log'
     multiline:
       pattern: '^[a-z_]* '
       negate: 'false'
@@ -250,21 +286,24 @@ filebeat_logging_paths:
     - ceph-mon
     - ceph
     - infrastructure
-  - paths:
-    - '/var/log/ceph/ceph-osd.*.log'
+  - host_group: 'ceph_all'
+    file_patterns:
+    - 'ceph-osd.*.log'
     tags:
     - ceph-osd
     - ceph
     - infrastructure
-  - paths:
-    - '/var/log/nginx/*access.log'
+  - host_group: 'repo_all'
+    file_patterns
+    - '*access.log'
     tags:
     - repo
     - nginx
     - nginx-access
     - infrastructure
-  - paths:
-    - '/var/log/nginx/*error.log'
+  - host_group: 'repo_all'
+    file_patterns:
+    - '*error.log'
     tags:
     - repo
     - nginx
