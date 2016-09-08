@@ -18,6 +18,7 @@ export FORKS=${FORKS:-$(grep -c ^processor /proc/cpuinfo)}
 export ANSIBLE_PARAMETERS=${ANSIBLE_PARAMETERS:-""}
 export ANSIBLE_FORCE_COLOR=${ANSIBLE_FORCE_COLOR:-"true"}
 export BOOTSTRAP_OPTS=${BOOTSTRAP_OPTS:-""}
+export BOOTSTRAP_ANSIBLE=${BOOTSTRAP_ANSIBLE:-"yes"}
 export UNAUTHENTICATED_APT=${UNAUTHENTICATED_APT:-no}
 
 OA_DIR='/opt/rpc-openstack/openstack-ansible'
@@ -33,7 +34,9 @@ function run_ansible {
 cd ${OA_DIR}
 
 # bootstrap ansible and install galaxy roles (needed whether AIO or multinode)
-./scripts/bootstrap-ansible.sh
+if [[ "${BOOTSTRAP_ANSIBLE}" == "yes" ]]; then
+  ./scripts/bootstrap-ansible.sh
+fi
 # This removes Ceph roles downloaded using their pre-Ansible-Galaxy names
 ansible-galaxy remove --roles-path /opt/rpc-openstack/rpcd/playbooks/roles/ ceph-common ceph-mon ceph-osd
 
